@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>My first three.js app</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="js/three.js"></script>
+    <script>
+        const scene = new THREE.Scene()
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 500)
+        camera.position.set(0, 0, 150);
+        camera.lookAt(0, 0, 100);
+
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+
+        var points = [];
+        points.push(new THREE.Vector3(- 10, 0, 0));
+        points.push(new THREE.Vector3(0, 10, 0));
+        points.push(new THREE.Vector3(10, 0, 0));
+
+        var geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+        var line0 = new THREE.Line(geometry, material);
+        var line1 = new THREE.Line(geometry, material);
+        var line2 = new THREE.Line(geometry, material);
+        var line3 = new THREE.Line(geometry, material);
+        var line4 = new THREE.Line(geometry, material);
+        var line5 = new THREE.Line(geometry, material);
+
+        line0.position.x = (00 - 50)
+        line1.position.x = (20 - 50)
+        line2.position.x = (40 - 50)
+        line3.position.x = (60 - 50)
+        line4.position.x = (80 - 50)
+        line5.position.x = (100 - 50)
+
+        scene.add(line5);
+        scene.add(line4);
+        scene.add(line3);
+        scene.add(line2);
+        scene.add(line1);
+        scene.add(line0);
+
+        renderer.render(scene, camera);
+
+        // create an AudioListener and add it to the camera
+        var listener = new THREE.AudioListener();
+        camera.add(listener);
+
+        // create an Audio source
+        var sound = new THREE.Audio(listener);
+
+        // load a sound and set it as the Audio object's buffer
+        var audioLoader = new THREE.AudioLoader();
+        audioLoader.load('sounds/SEPTEMBER.mp3', function (buffer) {
+            sound.setBuffer(buffer);
+            sound.setLoop(false);
+            sound.setVolume(1);
+            sound.play();
+        });
+
+        // create an AudioAnalyser, passing in the sound and desired fftSize
+        var analyser = new THREE.AudioAnalyser(sound, 32);
+
+        let xcoord = 0
+        let ycoord = 0
+
+        getMouseCo = (e) => {
+            xcoord = e.clientX
+            ycoord = e.clientY
+        }
+
+        document.addEventListener('mousemove', getMouseCo)
+
+
+        // 4. Make Box
+        const square = new THREE.BoxGeometry();
+        const squareMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+
+        makeBox = (e) => {
+            let cube = new THREE.Mesh(square, squareMaterial);
+
+            var vec = new THREE.Vector3(); // create once and reuse
+            var pos = new THREE.Vector3(); // create once and reuse
+
+            vec.set(
+                (event.clientX / window.innerWidth) * 2 - 1,
+                - (event.clientY / window.innerHeight) * 2 + 1,
+                0.5);
+
+            vec.unproject(camera);
+
+            vec.sub(camera.position).normalize();
+
+            var distance = - camera.position.z / vec.z;
+
+            pos.copy(camera.position).add(vec.multiplyScalar(distance));
+            
+            cube.position.x = pos.x
+            cube.position.y = pos.y
+            cube.position.z = pos.z
+        
+            scene.add(cube);
+
+            let cubeAnimation = () => {
+                requestAnimationFrame(cubeAnimation);
+                cube.rotation.y += 0.01
+                cube.rotation.x += 0.01
+            }
+
+            cubeAnimation()
+
+            setTimeout(() => {
+                scene.remove(cube)
+            }, 3500)
+        }
+
+        const torus = new THREE.TorusGeometry();
+        const torusMaterial = new THREE.MeshBasicMaterial({ color: 0xeac8d8 });
+
+        makeCircle = (e) => {
+            let cube = new THREE.Mesh(torus, torusMaterial);
+
+            var vec = new THREE.Vector3(); // create once and reuse
+            var pos = new THREE.Vector3(); // create once and reuse
+
+            vec.set(
+                (event.clientX / window.innerWidth) * 2 - 1,
+                - (event.clientY / window.innerHeight) * 2 + 1,
+                0.5);
+
+            vec.unproject(camera);
+
+            vec.sub(camera.position).normalize();
+
+            var distance = - camera.position.z / vec.z;
+
+            pos.copy(camera.position).add(vec.multiplyScalar(distance));
+            
+            console.log(pos)
+            cube.position.x = pos.x
+            cube.position.y = pos.y
+            cube.position.z = pos.z
+            scene.add(cube);
+            console.log('adding cube...')
+
+            let cubeAnimation = () => {
+                requestAnimationFrame(cubeAnimation);
+                cube.rotation.y += 0.01
+                cube.rotation.x += 0.01
+            }
+
+            cubeAnimation()
+
+            setTimeout(() => {
+                scene.remove(cube)
+            }, 3500)
+        }
+
+        document.addEventListener('click', makeBox)
+
+        document.addEventListener('mousemove', makeCircle)
+
+        
+        
+        document.addEventListener('dblclick', () => {
+            camera.lookAt(0, 0, 100);
+        })
+
+
+        let animate = () => {
+            requestAnimationFrame(animate);
+
+            renderer.render(scene, camera);
+            
+            // get the frequency of the sound
+            var data = analyser.getFrequencyData();
+            console.log(data)
+
+            line0.rotation.y += ((data[0] + data[1]) / 10000);
+            line1.rotation.y += ((data[2] + data[3]) / 10000);
+            line2.rotation.y += ((data[4] + data[5]) / 10000);
+            line3.rotation.y += ((data[6] + data[7]) / 10000);
+            line4.rotation.y += ((data[8] + data[9]) / 5000);
+            line5.rotation.y += ((data[10] + data[11]) / 5000);
+
+            line0.rotation.x += ((data[0] + data[1]) / 10000);
+            line1.rotation.x += ((data[2] + data[3]) / 10000);
+            line2.rotation.x += ((data[4] + data[5]) / 10000);
+            line3.rotation.x += ((data[6] + data[7]) / 10000);
+            line4.rotation.x += ((data[8] + data[9]) / 5000);
+            line5.rotation.x += ((data[10] + data[11]) / 5000);
+
+            camera.rotation.y -= (-0.5 + (xcoord / window.innerWidth)) / 100
+            camera.rotation.x -= (-0.5 + (ycoord / window.innerHeight)) / 100
+        }
+
+        animate();
+
+    </script>
+</body>
+
+</html>

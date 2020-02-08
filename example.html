@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>My first three.js app</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="js/three.js"></script>
+    <!-- can also be NPM installed -->
+    <script>
+        const scene = new THREE.Scene()
+        // Fog, FogExp2
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+        // FOV, aspectRatio, nearClippingPlane, farClippingPlane
+        const renderer = new THREE.WebGLRenderer();
+        // a canvas element element
+        // https://caniuse.com/#feat=webgl
+        // https://caniuse.com/#feat=webgl2
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        // setSize takes a third argument, updateStyle. Set as false for lower resolution rendering
+        document.body.appendChild(renderer.domElement);
+
+        const geometry = new THREE.BoxGeometry();
+        // // can even add event listeners to these
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        // // materials take an object with the properties which will apply
+        const cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+        // inserted at 0,0,0 by default
+        camera.position.z = 5;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            // re-renders the scene everytime the screen is refreshed, 60 times per second on a 60Hz screen
+            // additionally will pause when user is in another window or tab
+            renderer.render(scene, camera);
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+        }
+        animate();
+    </script>
+</body>
+
+</html>
